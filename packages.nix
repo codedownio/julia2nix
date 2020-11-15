@@ -29,6 +29,12 @@
   path = "B/BinDeps";
   src = fetchgit { url = "https://github.com/JuliaPackaging/BinDeps.jl.git"; sha256 = "1y49d6568872nxa3ychgjqa5201g4bqkpg8rga6f12qmirqiihj9"; deepClone = true; leaveDotGit = true; fetchSubmodules = true; };
 } {
+  name = "BinaryProvider";
+  uuid = "b99e7846-7c00-51b0-8f62-c81ae34c0232";
+  githash = "ecdec412a9abc8db54c0efc5548c64dfce072058";
+  path = "B/BinaryProvider";
+  src = fetchgit { url = "https://github.com/JuliaPackaging/BinaryProvider.jl.git"; sha256 = "158x16sa33w7f47il2kaccqj4pwjmiixln003lyxpcgcri6dbcnq"; deepClone = true; leaveDotGit = true; fetchSubmodules = true; };
+} {
   name = "Blink";
   uuid = "ad839575-38b3-5650-b840-f874b8c74a25";
   githash = "434893c1f9e9ce59be3f114641e99ef84c4d8f1a";
@@ -61,7 +67,7 @@
 } {
   name = "Compat";
   uuid = "34da2185-b29b-5c13-b0c7-acf172513d20";
-  githash = "b4f242d5e9f65648d438a03d245a9fdc6e38d728";
+  githash = "a706ff10f1cd8dab94f59fd09c0e657db8e77ff0";
   path = "C/Compat";
   src = fetchgit { url = "https://github.com/JuliaLang/Compat.jl.git"; sha256 = "1l6qxwmydpjhp27sq1kc28my8qyavw0ckix43nrwgdsb1v1vbi5d"; deepClone = true; leaveDotGit = true; fetchSubmodules = true; };
 } {
@@ -201,7 +207,7 @@
   uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3";
   githash = "c7ec02c4c6a039a98a15f955462cd7aea5df4508";
   path = "H/HTTP";
-  src = fetchgit { url = "https://github.com/JuliaWeb/HTTP.jl.git"; sha256 = "1mcyn9520qa14810b3ikrwkn8321nw6bbvlqr8wr5v9qs0g3bj2h"; deepClone = true; leaveDotGit = true; fetchSubmodules = true; };
+  src = fetchgit { url = "https://github.com/JuliaWeb/HTTP.jl.git"; sha256 = "1dvi9kfdqfqz65120a2ckz70rhlx3dq4z09mxcz3dy1dyd8nqg3w"; deepClone = true; leaveDotGit = true; fetchSubmodules = true; };
 } {
   name = "Hiccup";
   uuid = "9fb69e20-1954-56bb-a84f-559cc56a8ff7";
@@ -325,7 +331,7 @@
 } {
   name = "MbedTLS";
   uuid = "739be429-bea8-5141-9913-cc70e7f3736d";
-  githash = "426a6978b03a97ceb7ead77775a1da066343ec6e";
+  githash = "1c38e51c3d08ef2278062ebceade0e46cefc96fe";
   path = "M/MbedTLS";
   src = fetchgit { url = "https://github.com/JuliaLang/MbedTLS.jl.git"; sha256 = "1bk9dpa62qxv3qansqchwykbz8xkl8pg8f2w88i5n8yal36xcr5j"; deepClone = true; leaveDotGit = true; fetchSubmodules = true; };
 } {
