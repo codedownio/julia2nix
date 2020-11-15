@@ -1,0 +1,4 @@
+gitdb==4.0.5
+GitPython==3.1.11
+smmap==3.0.4
+toml==0.10.1
