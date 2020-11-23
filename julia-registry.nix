@@ -5,7 +5,7 @@ with pkgs;
 let
   packages = callPackage ./packages.nix {};
 
-  packagesJSON = writeText "packages.json" (lib.generators.toJSON {} packages);
+  packagesJSON = writeText "packages.json" (lib.generators.toJSON {} packages.closure);
 
   pythonToUse = python3.withPackages (ps: [ps.toml]);
 

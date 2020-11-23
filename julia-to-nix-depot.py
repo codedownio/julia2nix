@@ -13,6 +13,8 @@ from nix_util import fetch_sha256
 
 environment_folder = Path(sys.argv[1])
 
+general_repo_url = (len(sys.argv) >= 3 and sys.argv[2]) or "https://github.com/JuliaRegistries/General.git"
+
 if not Path(environment_folder).exists():
     raise Exception("Couldn't find Julia environment folder '%s'" % environment_folder)
 
@@ -32,57 +34,42 @@ for name in project["deps"]:
 manifest = toml.load(manifest_file)
 
 with tempfile.TemporaryDirectory() as working_dir:
-  working_dir = Path(working_dir)
-  general_repo_url = "https://github.com/JuliaRegistries/General.git"
-  local_registry_path = working_dir.joinpath("registry")
+    working_dir = Path(working_dir)
+    local_registry_path = working_dir.joinpath("registry")
 
-  print("Cloning %s to %s" % (str(general_repo_url), local_registry_path), file=sys.stderr)
-  Repo.clone_from(general_repo_url, local_registry_path)
+    print("Cloning %s to %s" % (str(general_repo_url), local_registry_path), file=sys.stderr)
+    Repo.clone_from(general_repo_url, local_registry_path)
 
-  registry = toml.load(local_registry_path.joinpath("Registry.toml"))
+    registry = toml.load(local_registry_path.joinpath("Registry.toml"))
 
-  infos = []
-  for name, details in manifest.items():
-      uuid = details[0]["uuid"]
-      githash = details[0].get("git-tree-sha1")
+    formatted_dicts = []
+    for name, details in manifest.items():
+        uuid = details[0]["uuid"]
+        githash = details[0].get("git-tree-sha1")
+        info = registry["packages"].get(uuid)
+        url = None
+        path = "null"
 
-      info = registry["packages"].get(uuid)
-      url = None
+        # Fill in url and path
+        if info:
+            package_path = local_registry_path.joinpath(info["path"]).joinpath("Package.toml")
+            if not package_path.exists():
+                raise Exception("Couldn't find package path '%s'" % str(package_path))
+            package = toml.load(package_path)
+            url = package["repo"]
+            path = info["path"] or "null"
 
-      if info:
-          package_path = local_registry_path.joinpath(info["path"]).joinpath("Package.toml")
-          if not package_path.exists():
-              raise Exception("Couldn't find package path '%s'" % str(package_path))
+        src = "null"
+        if url and githash:
+            sha256 = fetch_sha256(url, rev=githash)
+            src = 'fetchgit { ' + f'url = "{url}"; rev = "{githash}"; sha256 = "{sha256}";' + ' }'
+        else:
+            print("Failed to nix-prefetch-git for package %s (url = %s, githash = %s)" % (name, url, githash),
+                  file=sys.stderr)
 
-          package = toml.load(package_path)
-          url = package["repo"]
+        formatted_dicts.append("{" + f'\n  name = "{name}";\n  uuid = "{uuid}";\n  path = "{path}";\n  src = {src};' + "\n}")
 
-      infos.append({
-          "name": name,
-          "uuid": uuid,
-          "githash": githash,
-          "path": info and info.get("path"),
-          "url": url
-      })
-
-  formatted_dicts = []
-  for info in infos:
-      name = info["name"]
-      uuid = info["uuid"]
-      githash = info["githash"] or "null"
-      path = info["path"] or "null"
-      src = "null"
-      if info["url"]:
-          url = info["url"]
-          sha256 = fetch_sha256(url, rev="HEAD", deepClone=True, leaveDotGit=True, fetchSubmodules=True)
-          # src = 'fetchgit { ' + f'url = "{url}"; sha256 = "{sha256}";' + ' }'
-          src = 'fetchgit { ' + f'url = "{url}"; sha256 = "{sha256}"; deepClone = true; leaveDotGit = true; fetchSubmodules = true;' + ' }'
-          # src = 'fetchgit { ' + f'url = "{url}"; sha256 = "{sha256}"; leaveDotGit = true; fetchSubmodules = true;' + ' }'
-
-      formatted_dicts.append("{" + f'\n  name = "{name}";\n  uuid = "{uuid}";\n  githash = "{githash}";\n  path = "{path}";\n  src = {src};' + "\n}")
-
-  formatted = " ".join(formatted_dicts)
-  print("""{fetchgit}: {
-  rootPackages: [%s];
-  closure: [%s];
-}""" % (" ".join(['"' + x + '"' for x in root_packages]), formatted))
+    print("""{fetchgit}: {
+  rootPackages = [%s];
+  closure = [%s];
+}""" % (" ".join(['"' + x + '"' for x in root_packages]), " ".join(formatted_dicts)))
