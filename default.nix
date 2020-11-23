@@ -4,7 +4,7 @@ with pkgs;
 
 
 let
-  registry = import ./julia-registry.nix;
+  baseJulia = julia_11;
 
   extraLibs = [
     # IJulia.jl
@@ -23,8 +23,6 @@ let
     xorg.libXt xorg.libX11 xorg.libXrender xorg.libXext glfw freetype
   ];
 
-  baseJulia = julia_11;
-
   julia = runCommand "julia-wrapped" { buildInputs = [makeWrapper]; } ''
     mkdir -p $out/bin
     makeWrapper ${baseJulia}/bin/julia $out/bin/julia \
@@ -33,27 +31,4 @@ let
 
 in
 
-runCommand "julia-depot" {
-  buildInputs = [git curl julia];
-  inherit registry;
-} ''
-  export HOME=$(pwd)
-
-  echo "Using registry $registry"
-
-  cp ${/home/tom/juliaenv2/Manifest.toml} ./Manifest.toml
-  cp ${/home/tom/juliaenv2/Project.toml} ./Project.toml
-
-  ls -lh
-
-  julia -e ' \
-    using Pkg;
-    Pkg.Registry.add(RegistrySpec(path="${registry}"));
-
-    # Pkg.add("IJulia")
-    Pkg.activate(".")
-    Pkg.instantiate()
-  '
-
-  cp -r .julia $out
-''
+callPackage ./common.nix { inherit git curl julia; }
