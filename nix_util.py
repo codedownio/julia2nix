@@ -1,10 +1,9 @@
-#!/usr/bin/env python3
 
 import json
 import subprocess
 
 
-def fetch_sha256(url, rev="HEAD", deepClone=False, leaveDotGit=True, fetchSubmodules=True):
+def fetch_sha256(url, rev="HEAD", deepClone=False, leaveDotGit=False, fetchSubmodules=False):
     extra_args = [] \
       + (["--deepClone"] if deepClone else []) \
       + (["--leave-dotGit"] if leaveDotGit else []) \
