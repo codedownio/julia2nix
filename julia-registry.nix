@@ -14,7 +14,7 @@ let
       cp -r ${item.src}/. $out
       cd $out
       git init
-      git add .
+      git add . -f
       git config user.email "julia2nix@localhost"
       git config user.name "julia2nix"
       git commit -m "Dummy commit"
