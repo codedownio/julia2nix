@@ -5,7 +5,23 @@ with pkgs;
 let
   packages = callPackage ./packages.nix {};
 
-  packagesJSON = writeText "packages.json" (lib.generators.toJSON {} packages.closure);
+  # This step is needed because leaveDotGit is not reproducible
+  # https://github.com/NixOS/nixpkgs/issues/8567
+  repoified = map repoify packages.closure;
+  repoify = item: if item.src == null then item else item // {
+    src = runCommand ''${item.name}-repoified'' {buildInputs = [git];} ''
+      mkdir -p $out
+      cp -r ${item.src}/. $out
+      cd $out
+      git init
+      git add .
+      git config user.email "julia2nix@localhost"
+      git config user.name "julia2nix"
+      git commit -m "Dummy commit"
+    '';
+    };
+
+  packagesJSON = writeText "packages.json" (lib.generators.toJSON {} repoified);
 
   pythonToUse = python3.withPackages (ps: [ps.toml]);
 
@@ -31,7 +47,7 @@ runCommand "julia-registry" { buildInputs = [pythonToUse jq git]; } ''
         python -c "import toml; \
                    packageTomlPath = '$path/Package.toml'; \
                    contents = toml.load(packageTomlPath); \
-                   contents['repo'] = '$src'; \
+                   contents['repo'] = 'file://$src'; \
                    f = open(packageTomlPath, 'w'); \
                    f.write(toml.dumps(contents)); \
                    "

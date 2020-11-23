@@ -70,6 +70,9 @@ with tempfile.TemporaryDirectory() as working_dir:
         formatted_dicts.append("{" + f'\n  name = "{name}";\n  uuid = "{uuid}";\n  path = "{path}";\n  src = {src};' + "\n}")
 
     print("""{fetchgit}: {
+  registryUrl = "TODO";
+  registryRev = "TODO";
+  registrySha256 = "TODO";
   rootPackages = [%s];
   closure = [%s];
 }""" % (" ".join(['"' + x + '"' for x in root_packages]), " ".join(formatted_dicts)))
