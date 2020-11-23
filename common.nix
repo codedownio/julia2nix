@@ -3,12 +3,12 @@
   curl,
   fetchgit,
   git,
-  jq
+  jq,
   julia,
   lib,
   python3,
   runCommand,
-  writeText,
+  writeText
 }:
 
 let
@@ -86,13 +86,13 @@ runCommand "julia-depot" {
   cp ${/home/tom/juliaenv2/Manifest.toml} ./Manifest.toml
   cp ${/home/tom/juliaenv2/Project.toml} ./Project.toml
 
-  ls -lh
+  # Use built-in python so Julia doesn't try to install Conda
+  export PYTHON=${python3}/bin/python
 
   julia -e ' \
     using Pkg;
     Pkg.Registry.add(RegistrySpec(path="${registry}"));
 
-    # Pkg.add("IJulia")
     Pkg.activate(".")
     Pkg.instantiate()
   '
