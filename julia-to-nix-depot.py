@@ -67,7 +67,13 @@ with tempfile.TemporaryDirectory() as working_dir:
             print("Failed to nix-prefetch-git for package %s (url = %s, githash = %s)" % (name, url, githash),
                   file=sys.stderr)
 
-        formatted_dicts.append("{" + f'\n  name = "{name}";\n  uuid = "{uuid}";\n  path = "{path}";\n  src = {src};' + "\n}")
+        formatted_dicts.append("{\n  "
+                               + "\n  ".join([f'name = "{name}";',
+                                              f'uuid = "{uuid}";',
+                                              f'path = "{path}";',
+                                              f'treehash = "{githash}";',
+                                              f'src = {src};'])
+                               + "\n}")
 
     print("""{fetchgit}: {
   registryUrl = "TODO";

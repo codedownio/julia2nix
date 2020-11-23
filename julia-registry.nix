@@ -18,6 +18,11 @@ let
       git config user.email "julia2nix@localhost"
       git config user.name "julia2nix"
       git commit -m "Dummy commit"
+
+      if [[ $(git cat-file -t ${item.treehash}) != "tree" ]]; then
+        echo "Couldn't find desired tree object for ${item.name} in repoify (${item.treehash})"
+        exit 1
+      fi
     '';
     };
 
