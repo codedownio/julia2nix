@@ -1,0 +1,19 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -i python3 -p "python3.withPackages (ps: [ps.toml ps.GitPython])" nix-prefetch-git
+
+import os
+from pathlib import Path
+import shutil
+import subprocess
+
+script_dir = Path(os.path.dirname(os.path.realpath(__file__)))
+
+output_dir = Path(".")
+shutil.copy(script_dir.joinpath("templates").joinpath("common.nix"), output_dir)
+shutil.copy(script_dir.joinpath("templates").joinpath("default.nix"), output_dir)
+
+environment_dir = Path(".")
+repo_url = "https://github.com/JuliaRegistries/General.git"
+packages_nix = subprocess.check_output(["python", script_dir.joinpath("gather_packages.py"), environment_dir, repo_url])
+with open(output_dir.joinpath("packages.nix"), "w") as f:
+    f.write(packages_nix)
