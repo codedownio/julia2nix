@@ -82,12 +82,10 @@ runCommand "julia-depot" {
   export HOME=$(pwd)
 
   echo "Using registry $registry"
+  echo "Using Julia ${julia}/bin/julia"
 
   cp ${/home/tom/juliaenv2/Manifest.toml} ./Manifest.toml
   cp ${/home/tom/juliaenv2/Project.toml} ./Project.toml
-
-  # Use built-in python so Julia doesn't try to install Conda
-  export PYTHON=${python3}/bin/python
 
   julia -e ' \
     using Pkg;
