@@ -11,7 +11,7 @@ First, `cd` to a folder and create a Julia `Project.toml` and `Manifest.toml` co
 mkdir depot
 cd depot
 julia
-# Press "]" to enter package mode
+julia> # Press "]" to enter package mode
 pkg> activate .
 pkg> add SomePackage
 pkg> add SomeOtherPackage
