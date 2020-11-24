@@ -9,11 +9,16 @@ import subprocess
 script_dir = Path(os.path.dirname(os.path.realpath(__file__)))
 
 output_dir = Path(".")
+
+# Always copy the common code
 shutil.copy(script_dir.joinpath("templates").joinpath("common.nix"), output_dir)
-shutil.copy(script_dir.joinpath("templates").joinpath("default.nix"), output_dir)
+
+# Only copy default.nix if it doesn't exist yet, since the user is meant to modify it
+if not output_dir.joinpath("default.nix").exists():
+    shutil.copy(script_dir.joinpath("templates").joinpath("default.nix"), output_dir)
 
 environment_dir = Path(".")
 repo_url = "https://github.com/JuliaRegistries/General.git"
-packages_nix = subprocess.check_output(["python", script_dir.joinpath("gather_packages.py"), environment_dir, repo_url])
+packages_nix = subprocess.check_output(["python", script_dir.joinpath("gather_packages.py"), environment_dir, repo_url]).decode()
 with open(output_dir.joinpath("packages.nix"), "w") as f:
     f.write(packages_nix)

@@ -63,7 +63,7 @@ with tempfile.TemporaryDirectory() as working_dir:
             sha256 = fetch_sha256(url, rev=githash)
             src = 'fetchgit { ' + f'url = "{url}"; rev = "{githash}"; sha256 = "{sha256}";' + ' }'
         else:
-            print("Failed to nix-prefetch-git for package %s (url = %s, githash = %s)" % (name, url, githash),
+            print("Failed to nix-prefetch-git for package %s (url = %s, githash = %s). Hopefully it's built-in?" % (name, url, githash),
                   file=sys.stderr)
 
         formatted_dicts.append("{\n  "

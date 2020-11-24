@@ -1,7 +1,9 @@
 
 # `julia-to-nix-depot`
 
-## Usage
+
+
+## Building a Julia depot
 
 First, `cd` to a folder and create a Julia `Project.toml` and `Manifest.toml` containing the packages you want.
 
@@ -28,3 +30,11 @@ export NIX_PATH=nixpkgs=...
 cd /path/to/depot
 ~/tools/julia2nix/julia2nix
 ```
+
+This should place a few Nix files in your `depot` folder, including a `default.nix`. Now you can build the Julia depot:
+
+```bash
+nix-build .
+```
+
+## Using the depot
