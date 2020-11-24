@@ -21,14 +21,12 @@ pkg> [Ctrl+D to exit]
 Now use `julia2nix` to generate the Nix files.
 
 ```bash
-cd ~/tools
-git clone git@github.com:thomasjm/julia2nix.git
+git clone git@github.com:thomasjm/julia2nix.git /some/path/julia2nix
 
 # Make sure you have a NIX_PATH set
 export NIX_PATH=nixpkgs=...
 
-cd /path/to/depot
-~/tools/julia2nix/julia2nix
+/some/path/julia2nix/julia2nix
 ```
 
 This should place a few Nix files in your `depot` folder, including a `default.nix`. Now you can build the Julia depot:
