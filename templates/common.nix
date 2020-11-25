@@ -18,11 +18,11 @@ let
 
   # This step is needed because leaveDotGit is not reproducible
   # https://github.com/NixOS/nixpkgs/issues/8567
-  repoified = map repoify packages.closure;
-  repoify = item: if item.src == null then item else item // {
-    src = runCommand ''${item.name}-repoified'' {buildInputs = [git];} ''
+  repoified = map (item: if item.src == null then item else item // { src = repoify item.name item.treehash item.src; }) packages.closure;
+  repoify = name: treehash: src:
+    runCommand ''${name}-repoified'' {buildInputs = [git];} ''
       mkdir -p $out
-      cp -r ${item.src}/. $out
+      cp -r ${src}/. $out
       cd $out
       git init
       git add . -f
@@ -30,25 +30,24 @@ let
       git config user.name "julia2nix"
       git commit -m "Dummy commit"
 
-      if [[ $(git cat-file -t ${item.treehash}) != "tree" ]]; then
-        echo "Couldn't find desired tree object for ${item.name} in repoify (${item.treehash})"
-        exit 1
+      if [[ -n "${treehash}" ]]; then
+        if [[ $(git cat-file -t ${treehash}) != "tree" ]]; then
+          echo "Couldn't find desired tree object for ${name} in repoify (${treehash})"
+          exit 1
+        fi
       fi
     '';
-    };
 
   packagesJSON = writeText "packages.json" (lib.generators.toJSON {} repoified);
 
   pythonToUse = python3.withPackages (ps: [ps.toml]);
 
-  generalRegistrySrc = fetchgit {
-    url = "https://github.com/JuliaRegistries/General.git";
-    rev = "502be3c39d10326a44676a1797acacf8d84403b3";
-    sha256 = "0cip6ppndfvvwpf3zc5p83ch1c6d0db249mdk7gskskahrb6zmj1";
+  generalRegistrySrc = repoify "julia-general" "" (fetchgit {
+    url = packages.registryUrl;
+    rev = packages.registryRev;
+    sha256 = packages.registrySha256;
     branchName = "master";
-    leaveDotGit = true;
-    deepClone = true;
-  };
+  });
 
   registry = runCommand "julia-registry" { buildInputs = [pythonToUse jq git]; } ''
     git clone ${generalRegistrySrc}/. $out
