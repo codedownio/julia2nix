@@ -1,5 +1,5 @@
 
-# `julia-to-nix-depot`
+# `julia2nix`
 
 
 

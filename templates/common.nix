@@ -8,7 +8,9 @@
   lib,
   python3,
   runCommand,
-  writeText
+  writeText,
+  makeWrapper,
+  makeWrapperArgs ? ""
 }:
 
 let
@@ -73,27 +75,36 @@ let
     git commit -m "Switch to local package repos"
   '';
 
+  depot = runCommand "julia-depot" {
+    buildInputs = [git curl julia];
+    inherit registry;
+  } ''
+    export HOME=$(pwd)
+
+    echo "Using registry $registry"
+    echo "Using Julia ${julia}/bin/julia"
+
+    cp ${./Manifest.toml} ./Manifest.toml
+    cp ${./Project.toml} ./Project.toml
+
+    julia -e ' \
+      using Pkg;
+      Pkg.Registry.add(RegistrySpec(path="${registry}"));
+
+      Pkg.activate(".")
+      Pkg.instantiate()
+    '
+
+    cp -r .julia $out
+  '';
+
 in
 
-runCommand "julia-depot" {
-  buildInputs = [git curl julia];
-  inherit registry;
+runCommand "julia-env" {
+  inherit julia depot makeWrapperArgs;
+  buildInputs = [makeWrapper];
 } ''
-  export HOME=$(pwd)
-
-  echo "Using registry $registry"
-  echo "Using Julia ${julia}/bin/julia"
-
-  cp ${/home/tom/juliaenv2/Manifest.toml} ./Manifest.toml
-  cp ${/home/tom/juliaenv2/Project.toml} ./Project.toml
-
-  julia -e ' \
-    using Pkg;
-    Pkg.Registry.add(RegistrySpec(path="${registry}"));
-
-    Pkg.activate(".")
-    Pkg.instantiate()
-  '
-
-  cp -r .julia $out
+  mkdir -p $out/bin
+  makeWrapper $julia/bin/julia $out/bin/julia \
+    --set JULIA_DEPOT_PATH /home/user/.julia:/build/.julia $makeWrapperArgs
 ''
