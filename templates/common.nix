@@ -2,6 +2,7 @@
   callPackage,
   curl,
   fetchgit,
+  fetchurl,
   git,
   jq,
   julia,
@@ -37,6 +38,15 @@ let
         fi
       fi
     '';
+
+  artifactOverrides = lib.mapAttrs (sha256: url: fetchurl { inherit sha256 url; }) (
+    lib.zipAttrsWith (name: values: lib.head values) (
+      map (item: item.artifacts) packages.closure
+    )
+  );
+  overridesToml = runCommand "Overrides.toml" { buildInputs = [jq]; } ''
+    echo '${lib.generators.toJSON {} artifactOverrides}' | jq -r '. | to_entries | map ((.key + " = \"" + .value + "\"")) | .[]' > $out
+  '';
 
   packagesJSON = writeText "packages.json" (lib.generators.toJSON {} repoified);
 
@@ -86,15 +96,25 @@ let
     cp ${./Manifest.toml} ./Manifest.toml
     cp ${./Project.toml} ./Project.toml
 
+    mkdir -p .julia/artifacts
+    cp ${overridesToml} .julia/artifacts/Overrides.toml
+    cat .julia/artifacts/Overrides.toml
+
     julia -e ' \
       using Pkg;
       Pkg.Registry.add(RegistrySpec(path="${registry}"));
 
       Pkg.activate(".")
       Pkg.instantiate()
+
+      # TODO
+      # Pkg.Registry.remove("General");
     '
 
     cp -r .julia $out
+
+    mkdir -p $out/artifacts
+    cp ${overridesToml} $out/artifacts/Overrides.toml
   '';
 
 in

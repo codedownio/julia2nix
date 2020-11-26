@@ -1,7 +1,9 @@
 #! /usr/bin/env nix-shell
 #! nix-shell -i python3 -p "python3.withPackages (ps: [ps.toml ps.GitPython])" nix-prefetch-git
 
+import os
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import toml
@@ -54,6 +56,7 @@ with tempfile.TemporaryDirectory() as working_dir:
         info = registry["packages"].get(uuid)
         url = None
         path = "null"
+        artifacts = "{}"
 
         # Fill in url and path
         if info:
@@ -68,6 +71,9 @@ with tempfile.TemporaryDirectory() as working_dir:
         if url and githash:
             sha256 = fetch_sha256(url, rev=githash)
             src = 'fetchgit { ' + f'url = "{url}"; rev = "{githash}"; sha256 = "{sha256}";' + ' }'
+
+            script_dir = Path(os.path.dirname(os.path.realpath(__file__)))
+            artifacts = subprocess.check_output([script_dir.joinpath("extract_artifacts.py"), src]).decode()
         else:
             print("Failed to nix-prefetch-git for package %s (url = %s, githash = %s). Hopefully it's built-in?" % (name, url, githash),
                   file=sys.stderr)
@@ -77,6 +83,7 @@ with tempfile.TemporaryDirectory() as working_dir:
                                               f'uuid = "{uuid}";',
                                               f'path = "{path}";',
                                               f'treehash = "{githash}";',
+                                              f'artifacts = {artifacts};',
                                               f'src = {src};'])
                                + "\n}")
 
