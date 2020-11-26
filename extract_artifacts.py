@@ -22,23 +22,32 @@ if not path.exists():
 
 artifacts = toml.load(path)
 
-# Based on https://stackoverflow.com/a/29652561/2659595
-def gen_dict_extract(key, var):
-    for k, v in var.items():
-        if k == key:
-            yield v
-        if isinstance(v, dict):
-            for result in gen_dict_extract(key, v):
-                yield result
-        elif isinstance(v, list):
-            for d in v:
-                for result in gen_dict_extract(key, d):
-                    yield result
+results = []
 
-results = list(chain.from_iterable(gen_dict_extract("download", artifacts)))
+def process_download(sha1, download):
+    results.append((sha1, download["url"], download["sha256"]))
+
+def process_top_level(details):
+    sha1 = details["git-tree-sha1"]
+
+    download = details.get("download")
+    if isinstance(download, list):
+        for d in download:
+            process_download(sha1, d)
+    elif isinstance(download, dict):
+        process_download(sha1, download)
+
+for name, details in artifacts.items():
+    if isinstance(details, list):
+        for detail in details:
+            process_top_level(detail)
+    elif isinstance(details, dict):
+        process_top_level(details)
 
 if results:
-    joined_results = "".join(['\n    "' + x["sha256"] + '" = "' + x["url"] + '";' for x in results])
-    print("{" + joined_results + "\n    }", end="")
+    print("{")
+    for (sha1, url, sha256) in results:
+        print(f'    "{sha1}" = fetchurl ' + '{ ' + f'\n      url = "{url}";\n      sha256 = "{sha256}";' + '\n    };')
+    print("  }", end="")
 else:
     print("{}", end="")
