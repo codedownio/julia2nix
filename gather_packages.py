@@ -73,7 +73,7 @@ with tempfile.TemporaryDirectory() as working_dir:
             src = 'fetchgit { ' + f'url = "{url}"; rev = "{githash}"; sha256 = "{sha256}";' + ' }'
 
             script_dir = Path(os.path.dirname(os.path.realpath(__file__)))
-            artifacts = subprocess.check_output([script_dir.joinpath("extract_artifacts.py"), src]).decode()
+            artifacts = subprocess.check_output([script_dir.joinpath("extract_artifacts.jl"), src]).decode()
         else:
             print("Failed to nix-prefetch-git for package %s (url = %s, githash = %s). Hopefully it's built-in?" % (name, url, githash),
                   file=sys.stderr)

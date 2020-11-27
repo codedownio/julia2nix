@@ -50,7 +50,7 @@ let
     installPhase = "cp -r . $out";
     dontFixup = true;
   };
-  artifactOverrides = lib.zipAttrsWith (name: values: fetchArtifact (lib.head values)) (
+  artifactOverrides = lib.zipAttrsWith (name: values: fetchArtifact (lib.head (lib.head values))) (
     map (item: item.artifacts) packages.closure
   );
   overridesToml = runCommand "Overrides.toml" { buildInputs = [jq]; } ''
