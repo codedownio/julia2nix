@@ -24,30 +24,34 @@ artifacts = toml.load(path)
 
 results = []
 
-def process_download(sha1, download):
-    results.append((sha1, download["url"], download["sha256"]))
+def process_download(name, sha1, download):
+    results.append((name, sha1, download["url"], download["sha256"]))
 
-def process_top_level(details):
+def process_top_level(name, details):
     sha1 = details["git-tree-sha1"]
 
     download = details.get("download")
     if isinstance(download, list):
         for d in download:
-            process_download(sha1, d)
+            process_download(name, sha1, d)
     elif isinstance(download, dict):
-        process_download(sha1, download)
+        process_download(name, sha1, download)
 
 for name, details in artifacts.items():
     if isinstance(details, list):
         for detail in details:
-            process_top_level(detail)
+            process_top_level(name, detail)
     elif isinstance(details, dict):
-        process_top_level(details)
+        process_top_level(name, details)
 
 if results:
     print("{")
-    for (sha1, url, sha256) in results:
-        print(f'    "{sha1}" = fetchurl ' + '{ ' + f'\n      url = "{url}";\n      sha256 = "{sha256}";' + '\n    };')
+    for (name, sha1, url, sha256) in results:
+        print(f'    "{sha1}" = ' + '{ ' +
+              f'\n      name = "{name}";' +
+              f'\n      url = "{url}";' +
+              f'\n      sha256 = "{sha256}";' +
+              '\n    };')
     print("  }", end="")
 else:
     print("{}", end="")

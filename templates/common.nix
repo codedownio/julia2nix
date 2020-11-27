@@ -3,12 +3,14 @@
   curl,
   fetchgit,
   fetchurl,
+  fetchzip,
   git,
   jq,
   julia,
   lib,
   python3,
   runCommand,
+  stdenv,
   writeText,
   makeWrapper,
   makeWrapperArgs ? ""
@@ -39,7 +41,16 @@ let
       fi
     '';
 
-  artifactOverrides = lib.zipAttrsWith (name: values: lib.head values) (
+  fetchArtifact = x: stdenv.mkDerivation {
+    name = x.name;
+    src = fetchurl { url = x.url; sha256 = x.sha256; };
+    sourceRoot = ".";
+    dontConfigure = true;
+    dontBuild = true;
+    installPhase = "cp -r . $out";
+    dontFixup = true;
+  };
+  artifactOverrides = lib.zipAttrsWith (name: values: fetchArtifact (lib.head values)) (
     map (item: item.artifacts) packages.closure
   );
   overridesToml = runCommand "Overrides.toml" { buildInputs = [jq]; } ''
@@ -96,6 +107,7 @@ let
 
     mkdir -p $out/artifacts
     cp ${overridesToml} $out/artifacts/Overrides.toml
+    cat $out/artifacts/Overrides.toml
 
     export JULIA_DEPOT_PATH=$out
     julia -e ' \
