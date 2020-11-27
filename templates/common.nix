@@ -13,7 +13,10 @@
   stdenv,
   writeText,
   makeWrapper,
-  makeWrapperArgs ? ""
+
+  # Arguments
+  makeWrapperArgs ? "",
+  precompile ? true
 }:
 
 let
@@ -95,7 +98,7 @@ let
 
   depot = runCommand "julia-depot" {
     buildInputs = [git curl julia];
-    inherit registry;
+    inherit registry precompile;
   } ''
     export HOME=$(pwd)
 
@@ -111,15 +114,23 @@ let
 
     export JULIA_DEPOT_PATH=$out
     julia -e ' \
-      using Pkg;
-      Pkg.Registry.add(RegistrySpec(path="${registry}"));
+      using Pkg
+      Pkg.Registry.add(RegistrySpec(path="${registry}"))
 
       Pkg.activate(".")
-      Pkg.instantiate(verbose = true)
+      Pkg.instantiate()
 
-      # TODO
-      # Pkg.Registry.remove("General");
+      # Remove the registry to save space
+      Pkg.Registry.rm("General")
     '
+
+    if [[ -n "$precompile" ]]; then
+      julia -e ' \
+        using Pkg
+        Pkg.activate(".")
+        Pkg.precompile()
+      '
+    fi
   '';
 
 in

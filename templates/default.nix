@@ -5,7 +5,7 @@ with pkgs;
 
 let
   # The base Julia version
-  baseJulia = julia_11;
+  baseJulia = julia_13;
 
   # Add extra library dependencies for your depot here!
   # You might need to determine these by trial and error for your packages, i.e.
@@ -28,4 +28,4 @@ let
 
 in
 
-callPackage ./common.nix { inherit git curl julia; }
+callPackage ./common.nix { inherit julia; }
