@@ -37,6 +37,8 @@ manifest = toml.load(manifest_file)
 registry_rev = "unknown"
 registry_sha256 = "unknown"
 
+script_dir = Path(os.path.dirname(os.path.realpath(__file__)))
+
 with tempfile.TemporaryDirectory() as working_dir:
     working_dir = Path(working_dir)
     local_registry_path = working_dir.joinpath("registry")
@@ -53,27 +55,31 @@ with tempfile.TemporaryDirectory() as working_dir:
     for name, details in manifest.items():
         uuid = details[0]["uuid"]
         githash = details[0].get("git-tree-sha1")
-        info = registry["packages"].get(uuid)
-        url = None
+        url = details[0].get("repo-url")
         path = "null"
         artifacts = "{}"
 
-        # Fill in url and path
-        if info:
-            package_path = local_registry_path.joinpath(info["path"]).joinpath("Package.toml")
-            if not package_path.exists():
-                raise Exception("Couldn't find package path '%s'" % str(package_path))
-            package = toml.load(package_path)
-            url = package["repo"]
-            path = info["path"] or "null"
+        # If we already got a URL from the manifest file, just use that.
+        # Otherwise, get it from the registry
+        if not url:
+            info = registry["packages"].get(uuid)
+            if info:
+                package_path = local_registry_path.joinpath(info["path"]).joinpath("Package.toml")
+                if not package_path.exists():
+                    raise Exception("Couldn't find package path '%s'" % str(package_path))
+                url = toml.load(package_path)["repo"]
+                path = info["path"] or "null"
 
         src = "null"
         if url and githash:
             sha256 = fetch_sha256(url, rev=githash)
             src = 'fetchgit { ' + f'url = "{url}"; rev = "{githash}"; sha256 = "{sha256}";' + ' }'
-
-            script_dir = Path(os.path.dirname(os.path.realpath(__file__)))
             artifacts = subprocess.check_output([script_dir.joinpath("extract_artifacts.jl"), src]).decode()
+
+            # If our URL came from the Manifest file, modify it to point to a Nix path
+            if details[0].get("repo-url"):
+                details[0]["repo-url"] = subprocess.check_output(["nix-build", "-E", src, "--no-out-link"]).decode().strip()
+
         else:
             print("Failed to nix-prefetch-git for package %s (url = %s, githash = %s). Hopefully it's built-in?" % (name, url, githash),
                   file=sys.stderr)
@@ -98,3 +104,6 @@ with tempfile.TemporaryDirectory() as working_dir:
         registry_rev,
         registry_sha256,
         " ".join(['"' + x + '"' for x in root_packages]), " ".join(formatted_dicts)))
+
+    with open(environment_folder.joinpath("Manifest.processed.toml"), "w") as f:
+        toml.dump(manifest, f)
