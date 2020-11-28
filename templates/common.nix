@@ -22,6 +22,7 @@
 let
   packages = callPackage ./packages.nix {};
 
+  ### Repoify packages
   # This step is needed because leaveDotGit is not reproducible
   # https://github.com/NixOS/nixpkgs/issues/8567
   repoified = map (item: if item.src == null then item else item // { src = repoify item.name item.treehash item.src; }) packages.closure;
@@ -43,11 +44,28 @@ let
         fi
       fi
     '';
+  repoifiedReplaceInManifest = lib.filter (x: x.replaceUrlInManifest != null) repoified;
 
+  ### Manifest.toml (processed)
+  manifestToml = runCommand "Manifest.toml" { buildInputs = [jq]; } ''
+    cp ${./Manifest.toml} ./Manifest.toml
+
+    echo ${writeText "packages.json" (lib.generators.toJSON {} repoifiedReplaceInManifest)}
+    cat ${writeText "packages.json" (lib.generators.toJSON {} repoifiedReplaceInManifest)} | jq -r '.[]|[.name, .replaceUrlInManifest, .src] | @tsv' |
+      while IFS=$'\t' read -r name replaceUrlInManifest src; do
+        sed -i "s|$replaceUrlInManifest|file://$src|g" ./Manifest.toml
+      done
+
+    cp ./Manifest.toml $out
+  '';
+
+  ### Overrides.toml
+  isArchive = url: lib.hasSuffix ".gz" url || lib.hasSuffix ".bz2" url;
   fetchArtifact = x: stdenv.mkDerivation {
     name = x.name;
     src = fetchurl { url = x.url; sha256 = x.sha256; };
     sourceRoot = ".";
+    dontUnpack = !(isArchive x.url);
     dontConfigure = true;
     dontBuild = true;
     installPhase = "cp -r . $out";
@@ -60,22 +78,18 @@ let
     echo '${lib.generators.toJSON {} artifactOverrides}' | jq -r '. | to_entries | map ((.key + " = \"" + .value + "\"")) | .[]' > $out
   '';
 
-  packagesJSON = writeText "packages.json" (lib.generators.toJSON {} repoified);
-
-  pythonToUse = python3.withPackages (ps: [ps.toml]);
-
+  ### Processed registry
   generalRegistrySrc = repoify "julia-general" "" (fetchgit {
     url = packages.registryUrl;
     rev = packages.registryRev;
     sha256 = packages.registrySha256;
     branchName = "master";
   });
-
-  registry = runCommand "julia-registry" { buildInputs = [pythonToUse jq git]; } ''
+  registry = runCommand "julia-registry" { buildInputs = [(python3.withPackages (ps: [ps.toml])) jq git]; } ''
     git clone ${generalRegistrySrc}/. $out
     cd $out
 
-    cat ${packagesJSON} | jq -r '.[]|[.name, .path, .src] | @tsv' |
+    cat ${writeText "packages.json" (lib.generators.toJSON {} repoified)} | jq -r '.[]|[.name, .path, .src] | @tsv' |
       while IFS=$'\t' read -r name path src; do
         # echo "Processing: $name, $path, $src"
         if [[ "$path" != "null" ]]; then
@@ -105,12 +119,11 @@ let
     echo "Using registry $registry"
     echo "Using Julia ${julia}/bin/julia"
 
-    cp ${./Manifest.toml} ./Manifest.toml
+    cp ${manifestToml} ./Manifest.toml
     cp ${./Project.toml} ./Project.toml
 
     mkdir -p $out/artifacts
     cp ${overridesToml} $out/artifacts/Overrides.toml
-    cat $out/artifacts/Overrides.toml
 
     export JULIA_DEPOT_PATH=$out
     julia -e ' \

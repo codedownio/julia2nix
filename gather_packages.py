@@ -58,10 +58,13 @@ with tempfile.TemporaryDirectory() as working_dir:
         url = details[0].get("repo-url")
         path = "null"
         artifacts = "{}"
+        replaceUrlInManifest = 'null'
 
         # If we already got a URL from the manifest file, just use that.
         # Otherwise, get it from the registry
-        if not url:
+        if url:
+            replaceUrlInManifest = f'"{url}"'
+        else:
             info = registry["packages"].get(uuid)
             if info:
                 package_path = local_registry_path.joinpath(info["path"]).joinpath("Package.toml")
@@ -78,7 +81,8 @@ with tempfile.TemporaryDirectory() as working_dir:
 
             # If our URL came from the Manifest file, modify it to point to a Nix path
             if details[0].get("repo-url"):
-                details[0]["repo-url"] = subprocess.check_output(["nix-build", "-E", src, "--no-out-link"]).decode().strip()
+                derivation = "with import <nixpkgs> {}; " + src
+                details[0]["repo-url"] = subprocess.check_output(["nix-build", "-E", derivation, "--no-out-link"]).decode().strip()
 
         else:
             print("Failed to nix-prefetch-git for package %s (url = %s, githash = %s). Hopefully it's built-in?" % (name, url, githash),
@@ -88,6 +92,7 @@ with tempfile.TemporaryDirectory() as working_dir:
                                + "\n  ".join([f'name = "{name}";',
                                               f'uuid = "{uuid}";',
                                               f'path = "{path}";',
+                                              f'replaceUrlInManifest = {replaceUrlInManifest};',
                                               f'treehash = "{githash}";',
                                               f'artifacts = {artifacts};',
                                               f'src = {src};'])
@@ -104,6 +109,3 @@ with tempfile.TemporaryDirectory() as working_dir:
         registry_rev,
         registry_sha256,
         " ".join(['"' + x + '"' for x in root_packages]), " ".join(formatted_dicts)))
-
-    with open(environment_folder.joinpath("Manifest.processed.toml"), "w") as f:
-        toml.dump(manifest, f)
