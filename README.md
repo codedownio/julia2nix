@@ -1,30 +1,19 @@
 
 # julia2nix
 
-Package a Julia environment using the [Nix package manager](https://nixos.org/).
+Package a Julia environment using the [Nix package manager](https://nixos.org/)!
 
-Given a Julia environment in the form of a `Project.toml` and `Manifest.toml` file, this tool will generate Nix derivations that build a Julia depot with the given packages.
-
-> Recommended: Julia 1.3+
-> Julia 1.3 introduced `Pkg.Artifacts`, a principled way for packages to specify binary dependencies etc.
+> Recommended: Julia 1.3+ (so we can use `Artifacts.toml`)
 
 ## Quick start
 
-### Step 0: make sure you have `NIX_PATH` set
-
-The `julia2nix` script uses a `nix-shell` shebang to run, so it needs to be able to find packages.
-
-``` bash
-export NIX_PATH=nixpkgs=...
-```
-
 ### Step 1: create `Project.toml` and `Manifest.toml`
 
-Go to a folder and create a Julia `Project.toml` and `Manifest.toml` containing the packages you want.
+Go to a folder and create a Julia `Project.toml` and `Manifest.toml` containing the desired packages, using the normal `Pkg` interface.
 
 > Important: make sure you use the same Julia version you're going to be specifying in Nix!
 > If you use different Julia versions, the package set you create may not be compatible.
-> It would be best to use the Nix-provided Julia for this, i.e. launch it with
+> It's best to just launch the Nix-provided Julia directly, i.e.
 > `$(nix-build '<nixpkgs>' -A julia_15)/bin/julia`
 
 ```bash
@@ -60,6 +49,9 @@ The following command should build your Julia environment and drop you into a Ju
 $(nix-build --no-out-link)/bin/julia
 ```
 
+## Updating packages
+
+To change the package set and regenerate the Nix expressions, simply repeat steps 1 and 2 in the same folder. `julia2nix` will overwrite `packages.nix` and possibly `common.nix`, but will not replace `default.nix`.
 
 ## How does it work?
 
