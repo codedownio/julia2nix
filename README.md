@@ -55,7 +55,7 @@ To change the package set and regenerate the Nix expressions, simply repeat step
 
 ## How does it work?
 
-Julia's new package manager `Pkg3` learns about available packages from a "registry" repository, primarily the [General](git@github.com:JuliaRegistries/General.git) registry. When you type `Pkg.install("SomePackage")`, it looks up the package's URL and other metadata such as the Git hash in the registry.
+Julia's new package manager `Pkg3` learns about available packages from a "registry" repository, primarily the [General](https://github.com/JuliaRegistries/General) registry. When you type `Pkg.install("SomePackage")`, it looks up the package's URL and other metadata such as the Git hash in the registry.
 
 `julia2nix` looks at your `Manifest.toml` to find all the packages that `Pkg3` will need to download and constructs Nix derivations to get the necessary versions of each. Then, it constructs a special version of the registry where those package URLs are replaced with Nix store paths. With this special registry, we can run `Pkg.instantiate()` and be sure that all clone requests will be read from disk.
 
