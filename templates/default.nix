@@ -26,4 +26,14 @@ let
 
 in
 
-callPackage ./common.nix { inherit julia; }
+callPackage ./common.nix {
+  inherit julia;
+
+  # Run Pkg.precompile() to precompile all packages?
+  precompile = true;
+
+  # Extra arguments to makeWrapper when creating the final Julia wrapper.
+  # By default, it will just put the new depot at the end of JULIA_DEPOT_PATH.
+  # You can add additional flags here.
+  makeWrapperArgs = "";
+}
