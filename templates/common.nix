@@ -60,8 +60,7 @@ let
   '';
 
   ### Overrides.toml
-  isArchive = url: lib.hasSuffix ".gz" url || lib.hasSuffix ".bz2" url;
-  fetchArtifact = x: stdenv.mkDerivation ({
+  fetchArtifact = x: stdenv.mkDerivation {
     name = x.name;
     src = fetchurl { url = x.url; sha256 = x.sha256; };
     sourceRoot = ".";
@@ -69,12 +68,7 @@ let
     dontBuild = true;
     installPhase = "cp -r . $out";
     dontFixup = true;
-  } // (if isArchive x.url then {} else {
-    unpackCmd = ''
-      mkdir -p $out/src
-      cp $curSrc $out/src
-    '';
-  }));
+  };
   artifactOverrides = lib.zipAttrsWith (name: values: fetchArtifact (lib.head (lib.head values))) (
     map (item: item.artifacts) packages.closure
   );
