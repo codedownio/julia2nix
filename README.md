@@ -57,9 +57,9 @@ To change the package set and regenerate the Nix expressions, simply repeat step
 
 Julia's new package manager `Pkg3` learns about available packages from a "registry" repository, primarily the [General](https://github.com/JuliaRegistries/General) registry. When you type `Pkg.install("SomePackage")`, it looks up the package's URL and other metadata such as the Git hash in the registry.
 
-`julia2nix` looks at your `Manifest.toml` to find all the packages that `Pkg3` will need to download and constructs Nix derivations to get the necessary versions of each. Then, it constructs a special version of the registry where those package URLs are replaced with Nix store paths. With this special registry, we can run `Pkg.instantiate()` and be sure that all clone requests will be read from disk.
+`julia2nix` looks at your `Manifest.toml` to find all the packages that `Pkg3` will need to download and constructs Nix derivations to get the necessary versions of each. Then, it constructs a special version of the registry where those package URLs are replaced with Nix store paths. With this special registry, we can run `Pkg.instantiate()` and be sure that all clone requests will be read from Nix store paths on disk.
 
-After the packages are cloned, some will need to obtain extra artifacts such as platform-specific library binaries. If the packages use the new `Pkg.Artifacts` system to specify their artifacts, then `julia2nix` will likewise generate derivations for these by processing the `Artifacts.toml` file in each package and computing an [`Overrides.toml`](https://julialang.github.io/Pkg.jl/v1/artifacts/#Overriding-artifact-locations) with Nix path versions.
+After the packages are cloned, some will need to obtain extra artifacts such as platform-specific library binaries. If the packages use the new `Pkg.Artifacts` system to specify their artifacts, then `julia2nix` will likewise generate derivations for these by processing the `Artifacts.toml` file in each package and computing an overall [`Overrides.toml`](https://julialang.github.io/Pkg.jl/v1/artifacts/#Overriding-artifact-locations) with Nix path versions of everything.
 
 At the end of the day, you get a declarative and reproducible Julia depot built with Nix!
 
@@ -67,7 +67,7 @@ At the end of the day, you get a declarative and reproducible Julia depot built 
 
 There are a few options you can configure in `default.nix` (also documented there):
 
-* Set whether `Pkg.precompile()` is called at the end to precompile all packages (default to true).
+* Set whether `Pkg.precompile()` is called at the end to precompile all packages (defaults to true).
 * Configure `makeWrapper` arguments to Julia, for example to configure environment variables. The default version sets the `PYTHON` environment variable to a Nix-provided Python, so that Julia packages won't try to use Conda to obtain their own.
 
 If you only want the Julia depot to use in your own derivations, it is exposed from `default.nix` as the `depot` attribute.
