@@ -49,12 +49,12 @@ This will create a few files:
 The following command should build your Julia environment and drop you into a Julia session where your packages are available:
 
 ``` bash
-$(nix-build --no-out-link)/bin/julia
+$(nix-build . --no-out-link)/bin/julia
 ```
 
 ## Updating packages
 
-To change the package set and regenerate the Nix expressions, simply repeat steps 1 and 2 in the same folder. `julia2nix` will overwrite `packages.nix` and possibly `common.nix`, but will not replace `default.nix`.
+To change the package set and regenerate the Nix expressions, simply repeat steps 1 and 2 in the same folder. `julia2nix` will overwrite `packages.nix` and possibly `common.nix`/`fetchgit`, but will not replace `default.nix`.
 
 ## How does it work?
 
