@@ -77,4 +77,4 @@ If you only want the Julia depot to use in your own derivations, it is exposed f
 
 ## Specific packages
 
-Check out the [wiki](https://github.com/thomasjm/julia2nix/wiki) for notes on specific packages that don't work out of the box but can be made to work. Wiki PRs welcome.
+Check out the [wiki](https://github.com/thomasjm/julia2nix/wiki) for notes on specific packages that don't work out of the box but can be made to work. Wiki contributions welcome.
