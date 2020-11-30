@@ -1,10 +1,10 @@
 {
   callPackage,
   curl,
-  fetchgit,
   fetchurl,
-  fetchzip,
   git,
+  stdenvNoCC,
+  cacert,
   jq,
   julia,
   lib,
@@ -20,6 +20,10 @@
 }:
 
 let
+  # We need to use a specially modified fetchgit that understands tree hashes, until
+  # https://github.com/NixOS/nixpkgs/pull/104714 lands
+  fetchgit = callPackage ./fetchgit {};
+
   packages = callPackage ./packages.nix {};
 
   ### Repoify packages
