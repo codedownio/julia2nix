@@ -49,6 +49,9 @@ This will create a few files:
 The following command should build your Julia environment and drop you into a Julia session where your packages are available:
 
 ``` bash
+# Make sure you have a writable depot in JULIA_DEPOT_PATH.
+# Our wrapped Julia will add the one we just built to the end.
+export JULIA_DEPOT_PATH=${HOME}/.julia
 $(nix-build . --no-out-link)/bin/julia
 ```
 
