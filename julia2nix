@@ -1,5 +1,5 @@
 #! /usr/bin/env nix-shell
-#! nix-shell -i python3 -p "python3.withPackages (ps: [ps.toml ps.GitPython])" nix-prefetch-git
+#! nix-shell -i python3 -p "python3"
 
 import os
 from pathlib import Path
@@ -25,6 +25,6 @@ if not output_dir.joinpath("default.nix").exists():
 
 environment_dir = Path(".")
 repo_url = "https://github.com/JuliaRegistries/General.git"
-packages_nix = subprocess.check_output(["python", script_dir.joinpath("gather_packages.py"), environment_dir, repo_url]).decode()
+packages_nix = subprocess.check_output([script_dir.joinpath("gather_packages.py"), environment_dir, repo_url]).decode()
 with open(output_dir.joinpath("packages.nix"), "w") as f:
     f.write(packages_nix)

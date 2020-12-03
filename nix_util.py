@@ -1,6 +1,12 @@
 
 import json
+import os
+from pathlib import Path
 import subprocess
+
+
+script_dir = Path(os.path.dirname(os.path.realpath(__file__)))
+nix_prefetch_git = script_dir.joinpath("templates").joinpath("fetchgit").joinpath("nix-prefetch-git")
 
 
 def fetch_sha256(url, rev="HEAD", deepClone=False, leaveDotGit=False, fetchSubmodules=False):
@@ -10,7 +16,7 @@ def fetch_sha256(url, rev="HEAD", deepClone=False, leaveDotGit=False, fetchSubmo
       + (["--fetch-submodules"] if fetchSubmodules else [])
 
     p = subprocess.run([
-        "nix-prefetch-git",
+        nix_prefetch_git,
         "--url", url,
         "--rev", rev,
         "--quiet"
