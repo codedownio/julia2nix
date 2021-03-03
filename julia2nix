@@ -7,35 +7,39 @@ from pathlib import Path
 import shutil
 import subprocess
 
-script_dir = Path(os.path.dirname(os.path.realpath(__file__)))
 
+def main():
+    script_dir = Path(os.path.dirname(os.path.realpath(__file__)))
 
-parser = argparse.ArgumentParser(description="Generate Nix expressions from Julia Package.toml/Manifest.toml files")
-parser.add_argument("-w", "--workers", type=int, default=8,
-                    help="number of parallel workers to use for nix-prefetch-git calls")
-parser.add_argument("-o", "--output-dir", type=str, default=".",
-                    help="output directory for files (default: current working directory)")
+    parser = argparse.ArgumentParser(description="Generate Nix expressions from Julia Package.toml/Manifest.toml files")
+    parser.add_argument("-w", "--workers", type=int, default=8,
+                        help="number of parallel workers to use for nix-prefetch-git calls")
+    parser.add_argument("-o", "--output-dir", type=str, default=".",
+                        help="output directory for files (default: current working directory)")
 
-args = parser.parse_args()
+    args = parser.parse_args()
 
-output_dir = Path(args.output_dir)
-workers = args.workers
+    output_dir = Path(args.output_dir)
+    workers = args.workers
 
-# Always copy the common code
-shutil.copy(script_dir.joinpath("templates").joinpath("common.nix"), output_dir)
+    # Always copy the common code
+    shutil.copy(script_dir.joinpath("templates").joinpath("common.nix"), output_dir)
 
-# Always copy the modified fetchgit
-fetchgit_dest = output_dir.joinpath("fetchgit")
-if fetchgit_dest.exists():
-    shutil.rmtree(fetchgit_dest)
-shutil.copytree(script_dir.joinpath("templates").joinpath("fetchgit"), fetchgit_dest)
+    # Always copy the modified fetchgit
+    fetchgit_dest = output_dir.joinpath("fetchgit")
+    if fetchgit_dest.exists():
+        shutil.rmtree(fetchgit_dest)
+    shutil.copytree(script_dir.joinpath("templates").joinpath("fetchgit"), fetchgit_dest)
 
-# Only copy default.nix if it doesn't exist yet, since the user is meant to modify it
-if not output_dir.joinpath("default.nix").exists():
-    shutil.copy(script_dir.joinpath("templates").joinpath("default.nix"), output_dir)
+    # Only copy default.nix if it doesn't exist yet, since the user is meant to modify it
+    if not output_dir.joinpath("default.nix").exists():
+        shutil.copy(script_dir.joinpath("templates").joinpath("default.nix"), output_dir)
 
-environment_dir = Path(".")
-repo_url = "https://github.com/JuliaRegistries/General.git"
-packages_nix = subprocess.check_output([script_dir.joinpath("gather_packages.py"), environment_dir, repo_url, str(workers)]).decode()
-with open(output_dir.joinpath("packages.nix"), "w") as f:
-    f.write(packages_nix)
+    environment_dir = Path(".")
+    repo_url = "https://github.com/JuliaRegistries/General.git"
+    packages_nix = subprocess.check_output([script_dir.joinpath("gather_packages.py"), environment_dir, repo_url, str(workers)]).decode()
+    with open(output_dir.joinpath("packages.nix"), "w") as f:
+        f.write(packages_nix)
+
+if __name__ == "__main__":
+    main()
