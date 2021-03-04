@@ -14,6 +14,56 @@ from git.repo.base import Repo
 from nix_util import fetch_sha256
 
 
+def process_item(args_tuple):
+    (manifest, name, local_registry_path, registry, script_dir) = args_tuple
+    details = manifest[name]
+
+    uuid = details[0]["uuid"]
+    githash = details[0].get("git-tree-sha1")
+    url = details[0].get("repo-url")
+    path = "null"
+    artifacts = "{}"
+    replace_url_in_manifest = 'null'
+
+    # If we already got a URL from the manifest file, just use that.
+    # Otherwise, get it from the registry
+    if url:
+        replace_url_in_manifest = f'"{url}"'
+    else:
+        info = registry["packages"].get(uuid)
+        if info:
+            package_path = local_registry_path.joinpath(info["path"]).joinpath("Package.toml")
+            if not package_path.exists():
+                raise Exception("Couldn't find package path '%s'" % str(package_path))
+            url = toml.load(package_path)["repo"]
+            path = info["path"] or "null"
+
+    src = "null"
+    if url and githash:
+        sha256 = fetch_sha256(url, rev=githash)
+        src = 'fetchgit { ' + f'url = "{url}"; rev = "{githash}"; sha256 = "{sha256}";' + ' }'
+        artifacts = subprocess.check_output([script_dir.joinpath("extract_artifacts.jl"), src]).decode()
+
+        # If our URL came from the Manifest file, modify it to point to a Nix path
+        if details[0].get("repo-url"):
+            derivation = "with import <nixpkgs> {}; " + src
+            details[0]["repo-url"] = subprocess.check_output(["nix-build", "-E", derivation, "--no-out-link"]).decode().strip()
+
+    else:
+        print("Failed to nix-prefetch-git for package %s (url = %s, githash = %s). Hopefully it's built-in?" % (name, url, githash),
+              file=sys.stderr)
+
+    return "{\n  " \
+           + "\n  ".join([f'name = "{name}";',
+                          f'uuid = "{uuid}";',
+                          f'path = "{path}";',
+                          f'replaceUrlInManifest = {replace_url_in_manifest};',
+                          f'treehash = "{githash}";',
+                          f'artifacts = {artifacts};',
+                          f'src = {src};']) \
+           + "\n}"
+
+
 def main():
     # Args
     environment_folder = Path(sys.argv[1])
@@ -57,68 +107,20 @@ def main():
         registry = toml.load(local_registry_path.joinpath("Registry.toml"))
 
         # Process each manifest item
-        def process_item(name):
-            details = manifest[name]
-
-            uuid = details[0]["uuid"]
-            githash = details[0].get("git-tree-sha1")
-            url = details[0].get("repo-url")
-            path = "null"
-            artifacts = "{}"
-            replace_url_in_manifest = 'null'
-
-            # If we already got a URL from the manifest file, just use that.
-            # Otherwise, get it from the registry
-            if url:
-                replace_url_in_manifest = f'"{url}"'
-            else:
-                info = registry["packages"].get(uuid)
-                if info:
-                    package_path = local_registry_path.joinpath(info["path"]).joinpath("Package.toml")
-                    if not package_path.exists():
-                        raise Exception("Couldn't find package path '%s'" % str(package_path))
-                    url = toml.load(package_path)["repo"]
-                    path = info["path"] or "null"
-
-            src = "null"
-            if url and githash:
-                sha256 = fetch_sha256(url, rev=githash)
-                src = 'fetchgit { ' + f'url = "{url}"; rev = "{githash}"; sha256 = "{sha256}";' + ' }'
-                artifacts = subprocess.check_output([script_dir.joinpath("extract_artifacts.jl"), src]).decode()
-
-                # If our URL came from the Manifest file, modify it to point to a Nix path
-                if details[0].get("repo-url"):
-                    derivation = "with import <nixpkgs> {}; " + src
-                    details[0]["repo-url"] = subprocess.check_output(["nix-build", "-E", derivation, "--no-out-link"]).decode().strip()
-
-            else:
-                print("Failed to nix-prefetch-git for package %s (url = %s, githash = %s). Hopefully it's built-in?" % (name, url, githash),
-                      file=sys.stderr)
-
-            return "{\n  " \
-                   + "\n  ".join([f'name = "{name}";',
-                                  f'uuid = "{uuid}";',
-                                  f'path = "{path}";',
-                                  f'replaceUrlInManifest = {replace_url_in_manifest};',
-                                  f'treehash = "{githash}";',
-                                  f'artifacts = {artifacts};',
-                                  f'src = {src};']) \
-                   + "\n}"
-
         with Pool(num_workers) as p:
-            formatted_dicts = p.map(process_item, manifest.keys())
+            formatted_dicts = p.map(process_item, ((manifest, x, local_registry_path, registry, script_dir) for x in manifest.keys()))
 
         print("""# This file is autogenerated, do not edit by hand!
-    {fetchgit}: {
-      registryUrl = "%s";
-      registryRev = "%s";
-      registrySha256 = "%s";
-      rootPackages = [%s];
-      closure = [%s];
-    }""" % (general_repo_url,
-            registry_rev,
-            registry_sha256,
-            " ".join(['"' + x + '"' for x in root_packages]), " ".join(formatted_dicts)))
+{fetchgit}: {
+  registryUrl = "%s";
+  registryRev = "%s";
+  registrySha256 = "%s";
+  rootPackages = [%s];
+  closure = [%s];
+}""" % (general_repo_url,
+        registry_rev,
+        registry_sha256,
+        " ".join(['"' + x + '"' for x in root_packages]), " ".join(formatted_dicts)))
 
 
 if __name__ == "__main__":
