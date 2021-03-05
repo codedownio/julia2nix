@@ -1,4 +1,4 @@
-with import <nixpkgs> {};
+{ pkgs ? import <nixpkgs> {} }:
 
 with pkgs;
 
@@ -36,4 +36,7 @@ callPackage ./common.nix {
   # By default, it will just put the new depot at the end of JULIA_DEPOT_PATH.
   # You can add additional flags here.
   makeWrapperArgs = "";
+
+  # Extra Pkgs to precompile environment
+  extraBuildInputs = [];
 }

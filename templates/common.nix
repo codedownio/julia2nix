@@ -16,7 +16,8 @@
 
   # Arguments
   makeWrapperArgs ? "",
-  precompile ? true
+  precompile ? true,
+  extraBuildInputs ? []
 }:
 
 let
@@ -113,7 +114,7 @@ let
   '';
 
   depot = runCommand "julia-depot" {
-    buildInputs = [git curl julia];
+    buildInputs = [git curl julia] ++ extraBuildInputs;
     inherit registry precompile;
   } ''
     export HOME=$(pwd)
