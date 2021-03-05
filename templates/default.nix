@@ -39,5 +39,6 @@ callPackage ./common.nix {
 
   # Extra buildInputs for building the Julia depot. Useful if your packages have
   # additional build-time dependencies not managed through the Artifacts.toml system.
-  extraBuildInputs = [];
+  # Defaults to extraLibs, but can be configured independently.
+  extraBuildInputs = extraLibs;
 }
