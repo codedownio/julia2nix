@@ -1,6 +1,8 @@
 
 # julia2nix
 
+[![Join the chat at https://gitter.im/julia2nix/community](https://badges.gitter.im/julia2nix/community.svg)](https://gitter.im/julia2nix/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Package a Julia environment using the [Nix package manager](https://nixos.org/)!
 
 > Recommended: Julia 1.3+ (so we can get package dependencies from `Artifacts.toml`)
