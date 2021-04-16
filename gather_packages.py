@@ -47,7 +47,7 @@ with tempfile.TemporaryDirectory() as working_dir:
     working_dir = Path(working_dir)
     local_registry_path = working_dir.joinpath("registry")
     print("Cloning %s to %s" % (str(general_repo_url), local_registry_path), file=sys.stderr)
-    repo = Repo.clone_from(general_repo_url, local_registry_path)
+    repo = Repo.clone_from(general_repo_url, local_registry_path, depth=1)
     registry_rev = repo.heads[0].commit.hexsha
     print("Got registry revision", registry_rev, file=sys.stderr)
     registry_sha256 = fetch_sha256(general_repo_url, rev=registry_rev)
