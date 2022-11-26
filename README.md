@@ -14,12 +14,12 @@ Go to a folder and create a Julia `Project.toml` and `Manifest.toml` containing 
 > Important: make sure you use the same Julia version you're going to be specifying in Nix!
 > If you use different versions, the package set you create may not be compatible.
 > It's best to just launch the Nix-provided Julia directly, i.e.
-> `$(nix-build '<nixpkgs>' -A julia_15)/bin/julia`
+> `$(nix-build '<nixpkgs>' -A julia-lts-bin)/bin/julia`
 
 ```bash
 mkdir depot
 cd depot
-$(nix-build '<nixpkgs>' -A julia_15)/bin/julia
+$(nix-build '<nixpkgs>' -A julia-lts-bin)/bin/julia
 
 julia> # Press "]" to enter package mode
 pkg> activate .
