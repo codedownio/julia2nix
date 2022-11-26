@@ -36,6 +36,11 @@ for name in project["deps"]:
 
 manifest = toml.load(manifest_file)
 
+# Manifest version 1.0 has the dependencies at the top level.
+# For version 2.0, they're under the "deps" heading.
+if manifest.get("manifest_format") == "2.0":
+    manifest = manifest["deps"]
+
 registry_rev = "unknown"
 registry_sha256 = "unknown"
 
