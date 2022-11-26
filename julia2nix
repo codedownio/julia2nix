@@ -5,6 +5,7 @@ import argparse
 import os
 from pathlib import Path
 import shutil
+import stat
 import subprocess
 
 
@@ -24,10 +25,12 @@ def main():
 
     # Always copy the common code
     shutil.copy(script_dir.joinpath("templates").joinpath("common.nix"), output_dir)
+    os.chmod(output_dir.joinpath("common.nix"), stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
 
     # Only copy default.nix if it doesn't exist yet, since the user is meant to modify it
     if not output_dir.joinpath("default.nix").exists():
         shutil.copy(script_dir.joinpath("templates").joinpath("default.nix"), output_dir)
+        os.chmod(output_dir.joinpath("default.nix"), stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
 
     environment_dir = Path(".")
     repo_url = "https://github.com/JuliaRegistries/General.git"

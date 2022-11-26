@@ -12,7 +12,15 @@
         {
           packages = {
             default = with pkgs; runCommand "julia2nix" { buildInputs = [makeWrapper]; } ''
-              makeWrapper ${./julia2nix} $out/bin/julia2nix \
+              mkdir -p $out/bin
+
+              cp ${./julia2nix} $out/bin/julia2nix
+              cp ${./gather_packages.py} $out/bin/gather_packages.py
+              cp ${./extract_artifacts.jl} $out/bin/extract_artifacts.jl
+              cp ${./nix_util.py} $out/bin/nix_util.py
+              cp -r ${./templates} $out/bin/templates
+
+              wrapProgram $out/bin/julia2nix \
                --set PATH ${lib.makeBinPath [nix python3]}
             '';
           };
