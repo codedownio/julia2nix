@@ -3,7 +3,6 @@
   curl,
   fetchurl,
   git,
-  stdenvNoCC,
   cacert,
   fetchgit,
   jq,
@@ -124,6 +123,8 @@ let
 
     mkdir -p $out/artifacts
     cp ${overridesToml} $out/artifacts/Overrides.toml
+
+    export JULIA_SSL_CA_ROOTS_PATH="${cacert}/etc/ssl/certs/ca-bundle.crt"
 
     export JULIA_DEPOT_PATH=$out
     julia -e ' \
