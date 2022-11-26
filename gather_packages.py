@@ -1,6 +1,7 @@
 #! /usr/bin/env nix-shell
 #! nix-shell -i python3 -p "python3.withPackages (ps: [ps.toml ps.GitPython])"
 
+import logging
 import os
 from multiprocessing import Pool
 from pathlib import Path
@@ -12,6 +13,14 @@ import toml
 from git.repo.base import Repo
 
 from nix_util import fetch_sha256
+
+# Logger
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(stream=sys.stderr)]
+)
+logger = logging.getLogger("default")
 
 # Args
 environment_folder = Path(sys.argv[1])
@@ -51,12 +60,12 @@ with tempfile.TemporaryDirectory() as working_dir:
     # Clone and load the registry
     working_dir = Path(working_dir)
     local_registry_path = working_dir.joinpath("registry")
-    print("Cloning %s to %s" % (str(general_repo_url), local_registry_path), file=sys.stderr)
+    logger.info("Cloning %s to %s" % (str(general_repo_url), local_registry_path))
     repo = Repo.clone_from(general_repo_url, local_registry_path, depth=1)
     registry_rev = repo.heads[0].commit.hexsha
-    print("Got registry revision", registry_rev, file=sys.stderr)
+    logger.info("Got registry revision: " + str(registry_rev))
     registry_sha256 = fetch_sha256(general_repo_url, rev=registry_rev)
-    print("Got registry sha256", registry_sha256, file=sys.stderr)
+    logger.info("Got registry sha256: " + str(registry_sha256))
     registry = toml.load(local_registry_path.joinpath("Registry.toml"))
 
     # Process each manifest item
@@ -95,8 +104,7 @@ with tempfile.TemporaryDirectory() as working_dir:
                 details[0]["repo-url"] = subprocess.check_output(["nix-build", "-E", derivation, "--no-out-link"]).decode().strip()
 
         else:
-            print("Failed to nix-prefetch-git for package %s (url = %s, githash = %s). Hopefully it's built-in?" % (name, url, githash),
-                  file=sys.stderr)
+            logger.warning("Failed to nix-prefetch-git for package %s (url = %s, githash = %s). Hopefully it's built-in?" % (name, url, githash))
 
         return "{\n  " \
                + "\n  ".join([f'name = "{name}";',
