@@ -40,7 +40,6 @@ This will create a few files:
 * `packages.nix`: Nix expressions for the packages and artifacts.
 * `common.nix`: common code for building your environment. Please don't edit this by hand.
 * `default.nix`: the main entry point. You can edit some settings in here.
-* `fetchgit`: this contains a patched version of the Nix fetchgit function, necessary until [this PR](https://github.com/NixOS/nixpkgs/pull/104714) lands.
 
 > You should make sure the `baseJulia` in `default.nix` matches the Julia version you used in Step 1.
 
