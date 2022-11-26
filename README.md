@@ -30,9 +30,8 @@ pkg> [Ctrl+D to exit]
 ### Step 2: run `julia2nix` to generate the Nix files
 
 ```bash
-git clone git@github.com:codedownio/julia2nix.git ~/julia2nix
 # Still in the "depot" folder from before:
-~/julia2nix/julia2nix
+nix run https://github.com:codedownio/julia2nix
 ```
 
 This will create a few files:
