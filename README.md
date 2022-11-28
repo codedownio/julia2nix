@@ -29,9 +29,11 @@ pkg> [Ctrl+D to exit]
 ```
 ### Step 2: run `julia2nix` to generate the Nix files
 
+For better reproducibility, `julia2nix` is now powered by [Nix flakes](https://nixos.wiki/wiki/Flakes#Enable_flakes).
+
 ```bash
 # Still in the "depot" folder from before:
-nix run https://github.com:codedownio/julia2nix
+nix run github:codedownio/julia2nix
 ```
 
 This will create a few files:
@@ -59,7 +61,7 @@ To change the package set and regenerate the Nix expressions, simply repeat step
 
 ## How does it work?
 
-Julia's new package manager `Pkg3` learns about available packages from a "registry" repository, primarily the [General](https://github.com/JuliaRegistries/General) registry. When you type `Pkg.install("SomePackage")`, it looks up the package's URL and other metadata such as the Git hash in the registry.
+Julia's package manager learns about available packages from a "registry" repository, primarily the [General](https://github.com/JuliaRegistries/General) registry. When you type `Pkg.install("SomePackage")`, it looks up the package's URL and other metadata such as the Git hash in the registry.
 
 `julia2nix` looks at your `Manifest.toml` to find all the packages that `Pkg3` will need to download and constructs Nix derivations to get the necessary versions of each. Then, it constructs a special version of the registry where those package URLs are replaced with Nix store paths. With this special registry, plus rewriting any URL paths in `Manifest.toml` itself, we can run `Pkg.instantiate()` and be sure that all clone requests will be read from Nix store paths on disk.
 
