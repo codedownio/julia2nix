@@ -21,7 +21,8 @@
               cp -r ${./templates} $out/bin/templates
 
               wrapProgram $out/bin/julia2nix \
-               --set PATH ${lib.makeBinPath [nix python3 julia-stable-bin]}
+               --set PATH ${lib.makeBinPath [nix python3 julia-stable-bin]} \
+               --set NIX_PATH nixpkgs=${pkgs.path}
             '';
           };
         });
