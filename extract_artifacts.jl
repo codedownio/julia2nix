@@ -1,5 +1,3 @@
-#! /usr/bin/env nix-shell
-#! nix-shell -i julia -p julia-lts-bin
 
 using Pkg, Pkg.Artifacts, Pkg.BinaryPlatforms, Pkg.PlatformEngines
 

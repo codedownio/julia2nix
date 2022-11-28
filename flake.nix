@@ -1,7 +1,7 @@
 {
   description = "julia2nix";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/release-22.05";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/master";
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
   outputs = { self, nixpkgs, flake-utils }:
@@ -21,7 +21,7 @@
               cp -r ${./templates} $out/bin/templates
 
               wrapProgram $out/bin/julia2nix \
-               --set PATH ${lib.makeBinPath [nix python3]}
+               --set PATH ${lib.makeBinPath [nix python3 julia-stable-bin]}
             '';
           };
         });

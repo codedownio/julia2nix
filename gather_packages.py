@@ -96,7 +96,7 @@ with tempfile.TemporaryDirectory() as working_dir:
         if url and githash:
             sha256 = fetch_sha256(url, rev=githash)
             src = 'fetchgit { ' + f'url = "{url}"; rev = "{githash}"; sha256 = "{sha256}";' + ' }'
-            artifacts = subprocess.check_output([script_dir.joinpath("extract_artifacts.jl"), src]).decode()
+            artifacts = subprocess.check_output(["julia", script_dir.joinpath("extract_artifacts.jl"), src]).decode()
 
             # If our URL came from the Manifest file, modify it to point to a Nix path
             if details[0].get("repo-url"):
