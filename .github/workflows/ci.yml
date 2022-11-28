@@ -1,0 +1,21 @@
+name: "CI"
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: cachix/install-nix-action@v18
+      with:
+        extra_nix_config: |
+          access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+
+    - run: nix flake check
+
+    - run: |
+        cd test_depots/1.8.3
+        nix run ..
