@@ -33,7 +33,7 @@ For better reproducibility, `julia2nix` is now powered by [Nix flakes](https://n
 
 ```bash
 # Still in the "depot" folder from before:
-nix run github:codedownio/julia2nix
+nix run github:codedownio/julia2nix/v1.0.0
 ```
 
 This will create a few files:
