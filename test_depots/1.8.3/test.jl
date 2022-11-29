@@ -2,5 +2,5 @@
 import IJulia
 import Plots
 
-import Pkg
-Pkg.status()
+# import Pkg
+# Pkg.status()
