@@ -21,7 +21,7 @@ platform = platform_key_abi()
 selectArtifactsJl = joinpath([built, ".pkg", "select_artifacts.jl"])
 if isfile(selectArtifactsJl)
   include(selectArtifactsJl)
-  extraMetas = augment_platform!(platform)
+  extraMetas = augment_platform!(platform_key_abi()) # Unique copy of platform since it may alter it
   # TODO: add these extra artifacts to artifact_dict so they get processed below
 end
 
