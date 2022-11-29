@@ -35,7 +35,7 @@ let
     makeWrapper ${baseJulia}/bin/julia $out/bin/julia \
                 --suffix LD_LIBRARY_PATH : "${lib.makeLibraryPath extraLibs}" \
                 --set PYTHON ${python}/bin/python \
-                --suffix PATH : ${python}/bin/python
+                --suffix PATH : ${python}/bin
   '';
 
 in
