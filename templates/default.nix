@@ -30,7 +30,7 @@ let
   # Wrapped Julia with libraries and environment variables.
   # Note: setting The PYTHON environment variable is recommended to prevent packages
   # from trying to obtain their own with Conda.
-  julia = runCommand "julia-wrapped" { buildInputs = [makeWrapper]; } ''
+  julia = runCommand "julia-${baseJulia.version}-wrapped" { buildInputs = [makeWrapper]; } ''
     mkdir -p $out/bin
     makeWrapper ${baseJulia}/bin/julia $out/bin/julia \
                 --suffix LD_LIBRARY_PATH : "${lib.makeLibraryPath extraLibs}" \
