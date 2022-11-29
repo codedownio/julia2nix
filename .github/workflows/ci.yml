@@ -45,5 +45,6 @@ jobs:
     - name: Verify packages work
       run: |
         cd test_depots/${{matrix.test_depot}}
+        export NIX_PATH="nixpkgs=$(nix run .#nixpkgsPath)"
         nix-build .
         ./result/bin/julia ./test.jl
