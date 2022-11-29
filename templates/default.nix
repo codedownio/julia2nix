@@ -32,9 +32,6 @@ callPackage ./common.nix {
   # Run Pkg.precompile() to precompile all packages?
   precompile = true;
 
-  # Package Julia with a startup file to automatically activate the constructed environment.
-  autoActivate = true;
-
   # Extra arguments to makeWrapper when creating the final Julia wrapper.
   # By default, it will just put the new depot at the end of JULIA_DEPOT_PATH.
   # You can add additional flags here.

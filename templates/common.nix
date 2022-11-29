@@ -17,7 +17,6 @@
   # Arguments
   makeWrapperArgs ? "",
   precompile ? true,
-  autoActivate ? true,
   extraBuildInputs ? []
 }:
 
@@ -153,13 +152,6 @@ let
     '
   '';
 
-  startupJl = writeText "startup.jl" ''
-    using Pkg;
-    Pkg.activate("${project}")
-  '';
-
-  autoActivateArgs = lib.optionalString autoActivate "--add-flags '-i ${startupJl}'";
-
 in
 
 runCommand "julia-env" {
@@ -167,7 +159,7 @@ runCommand "julia-env" {
   buildInputs = [makeWrapper];
 } ''
   mkdir -p $out/bin
-  makeWrapper $julia/bin/julia $out/bin/julia ${autoActivateArgs} \
+  makeWrapper $julia/bin/julia $out/bin/julia \
     --suffix JULIA_DEPOT_PATH : "$depot" $makeWrapperArgs \
     --set JULIA_PROJECT "${project}"
 ''

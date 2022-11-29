@@ -74,7 +74,6 @@ At the end of the day, you get a declarative and reproducible Julia depot built 
 There are a few options you can configure in `default.nix` (also documented there):
 
 * Set whether `Pkg.precompile()` is called at the end to precompile all packages (defaults to true).
-* Set whether your Julia environment auto-activates the constructed environment (defaults to true).
 * Configure `makeWrapper` arguments to Julia, for example to configure environment variables. The default version sets the `PYTHON` environment variable to a Nix-provided Python, so that Julia packages won't try to use Conda to obtain their own.
 
 If you only want the Julia depot to use in your own derivations, it is exposed from `default.nix` as the `depot` attribute.
