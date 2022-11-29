@@ -1,23 +1,22 @@
-{
-  callPackage,
-  curl,
-  fetchurl,
-  git,
-  cacert,
-  fetchgit,
-  jq,
-  julia,
-  lib,
-  python3,
-  runCommand,
-  stdenv,
-  writeText,
-  makeWrapper,
+{ callPackage
+, curl
+, fetchurl
+, git
+, cacert
+, fetchgit
+, jq
+, julia
+, lib
+, python3
+, runCommand
+, stdenv
+, writeText
+, makeWrapper
 
   # Arguments
-  makeWrapperArgs ? "",
-  precompile ? true,
-  extraBuildInputs ? []
+, precompile ? true
+, extraLibs ? []
+, makeWrapperArgs ? ""
 }:
 
 let
@@ -117,7 +116,7 @@ let
   '';
 
   depot = runCommand "julia-depot" {
-    buildInputs = [git curl julia] ++ extraBuildInputs;
+    buildInputs = [git curl julia] ++ extraLibs;
     inherit registry precompile;
   } ''
     export HOME=$(pwd)
@@ -140,7 +139,6 @@ let
       import Pkg
       Pkg.Registry.add(Pkg.RegistrySpec(path="${registry}"))
 
-      Pkg.activate(".")
       Pkg.instantiate()
 
       if "precompile" in keys(ENV) && ENV["precompile"] != "0"
