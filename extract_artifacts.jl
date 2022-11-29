@@ -16,6 +16,15 @@ artifact_dict = Pkg.Artifacts.load_artifacts_toml(artifacts_toml)
 
 platform = platform_key_abi()
 
+# Check for a select_artifacts.jl.
+# See https://pkgdocs.julialang.org/v1/artifacts/#Extending-Platform-Selection
+selectArtifactsJl = joinpath([built, ".pkg", "select_artifacts.jl"])
+if isfile(selectArtifactsJl)
+  include(selectArtifactsJl)
+  extraMetas = augment_platform!(platform)
+  # TODO: add these extra artifacts to artifact_dict so they get processed below
+end
+
 # It's possible for the artifacts to have multiple entries with the same sha1,
 # so group by that first
 sha1_to_meta = Dict{String, Vector{Tuple{String, Any}}}()
