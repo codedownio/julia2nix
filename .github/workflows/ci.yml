@@ -6,9 +6,12 @@ on:
 
 jobs:
   flake-check:
-    runs-on: ubuntu-latest
+    name: ${{ matrix.os }}
+    runs-on: ${{matrix.os}}
     strategy:
       fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
     steps:
     - uses: actions/checkout@v3
     - uses: cachix/install-nix-action@v18
@@ -23,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest] # macos-latest
+        os: [ubuntu-latest, macos-latest]
         test_depot:
         - "1.8.3"
         - "1.6.6"
