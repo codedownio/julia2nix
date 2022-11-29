@@ -33,6 +33,10 @@ jobs:
       with:
         extra_nix_config: |
           access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-    - run: |
+    - name: Run julia2nix
+      run: |
         cd test_depots/${{matrix.test_depot}}
         nix run ..
+    - name: Run nix-build
+      run: |
+        nix-build .
