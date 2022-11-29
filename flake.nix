@@ -24,6 +24,8 @@
                --set PATH ${lib.makeBinPath [nix python3 julia-stable-bin]} \
                --set NIX_PATH nixpkgs=${pkgs.path}
             '';
+
+            nixpkgsPath = pkgs.writeShellScriptBin "nixpkgsPath.sh" "echo -n ${pkgs.path}";
           };
         });
 }

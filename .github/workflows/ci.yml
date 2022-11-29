@@ -40,4 +40,5 @@ jobs:
     - name: Run nix-build
       run: |
         cd test_depots/${{matrix.test_depot}}
+        export NIX_PATH="nixpkgs=$(nix run .#nixpkgsPath)"
         nix-build .
