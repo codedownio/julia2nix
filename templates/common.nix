@@ -110,6 +110,13 @@ let
     git commit -m "Switch to local package repos"
   '';
 
+  project = runCommand "julia-project" {} ''
+    mkdir $out
+    cd $out
+    cp ${manifestToml} ./Manifest.toml
+    cp ${./Project.toml} ./Project.toml
+  '';
+
   depot = runCommand "julia-depot" {
     buildInputs = [git curl julia] ++ extraBuildInputs;
     inherit registry precompile;
@@ -119,8 +126,7 @@ let
     echo "Using registry $registry"
     echo "Using Julia ${julia}/bin/julia"
 
-    cp ${manifestToml} ./Manifest.toml
-    cp ${./Project.toml} ./Project.toml
+    export JULIA_PROJECT=${project}
 
     mkdir -p $out/artifacts
     cp ${overridesToml} $out/artifacts/Overrides.toml
@@ -149,7 +155,7 @@ let
 
   startupJl = writeText "startup.jl" ''
     using Pkg;
-    Pkg.activate("${depot}")
+    Pkg.activate("${project}")
   '';
 
   autoActivateArgs = lib.optionalString autoActivate "--add-flags '-i ${startupJl}'";
@@ -162,5 +168,6 @@ runCommand "julia-env" {
 } ''
   mkdir -p $out/bin
   makeWrapper $julia/bin/julia $out/bin/julia ${autoActivateArgs} \
-    --suffix JULIA_DEPOT_PATH : "$depot" $makeWrapperArgs
+    --suffix JULIA_DEPOT_PATH : "$depot" $makeWrapperArgs \
+    --set JULIA_PROJECT "${project}"
 ''
