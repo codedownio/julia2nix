@@ -39,4 +39,5 @@ jobs:
         nix run ..
     - name: Run nix-build
       run: |
+        cd test_depots/${{matrix.test_depot}}
         nix-build .
