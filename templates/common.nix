@@ -127,25 +127,24 @@ let
 
     export JULIA_SSL_CA_ROOTS_PATH="${cacert}/etc/ssl/certs/ca-bundle.crt"
 
+    # Turn off auto precompile so it can be controlled by us below
+    export JULIA_PKG_PRECOMPILE_AUTO=0
+
     export JULIA_DEPOT_PATH=$out
     julia -e ' \
-      using Pkg
-      Pkg.Registry.add(RegistrySpec(path="${registry}"))
+      import Pkg
+      Pkg.Registry.add(Pkg.RegistrySpec(path="${registry}"))
 
       Pkg.activate(".")
       Pkg.instantiate()
 
+      if "precompile" in keys(ENV) && ENV["precompile"] != "0"
+        Pkg.precompile()
+      end
+
       # Remove the registry to save space
       Pkg.Registry.rm("General")
     '
-
-    if [[ -n "$precompile" ]]; then
-      julia -e ' \
-        using Pkg
-        Pkg.activate(".")
-        Pkg.precompile()
-      '
-    fi
   '';
 
   startupJl = writeText "startup.jl" ''
