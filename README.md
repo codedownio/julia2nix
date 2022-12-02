@@ -77,7 +77,3 @@ There are a few options you can configure in `default.nix` (also documented ther
 * Configure `makeWrapper` arguments to Julia, for example to configure environment variables. The default version sets the `PYTHON` environment variable to a Nix-provided Python, so that Julia packages won't try to use Conda to obtain their own.
 
 If you only want the Julia depot to use in your own derivations, it is exposed from `default.nix` as the `depot` attribute.
-
-## Specific packages
-
-Check out the [wiki](https://github.com/thomasjm/julia2nix/wiki) for notes on specific packages that don't work out of the box but can be made to work. Wiki contributions welcome.
